@@ -24,7 +24,7 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 
 Route::post('/create_wallet', [WalletController::class, 'create']);
 
-Route::post('/create_type', [WalletTypeController::class, 'create']);
+Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
 
 
 

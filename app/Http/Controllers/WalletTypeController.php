@@ -9,7 +9,7 @@ class WalletTypeController extends Controller
 {
     public function create(Request $request){
         $fields = $request->validate([
-            'type_name'=> ['required', 'string'],
+            'type_name'=> ['required', 'string', 'unique:wallet_types,type_name'],
             'minimum_balance'=> ['required'],
             'monthly_interest'=> ['required']
         ]);
@@ -21,6 +21,5 @@ class WalletTypeController extends Controller
         ]);
 
         return ["wallet" => $wallet];
-
     }
 }

@@ -16,8 +16,8 @@ class CreateWalletTypesTable extends Migration
         Schema::create('wallet_types', function (Blueprint $table) {
             $table->id();
             $table->string('type_name');
-            $table->string('minimun_balance');
-            $table->string('monthly_interest');
+            $table->float('minimum_balance');
+            $table->integer('monthly_interest');
             $table->timestamps();
         });
     }

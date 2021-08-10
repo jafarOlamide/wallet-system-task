@@ -28,4 +28,11 @@ class UserController extends Controller
         return ["user_details"=>$user_details, "wallets"=>$wallet_details, "transactions"=>$transaction_history];
 
     }
+
+
+    public function getUsers()
+    {
+        $users = User::select('name', 'email', 'role')->get();
+        return $users;
+    }
 }

@@ -23,13 +23,19 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 
 
 Route::post('/create_wallet', [WalletController::class, 'create']);
+Route::get('/wallets', [WalletController::class, 'getWallets']);
+Route::get('/wallets/{id}', [WalletController::class, 'showWallet']);
+
 
 Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
 
 
 
 
-Route::get('/get_user/{id}', [UserController::class, 'getUserDetails']);
+
+Route::get('/users/{id}', [UserController::class, 'getUserDetails']);
+Route::get('/users', [UserController::class, 'getUsers']);
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });

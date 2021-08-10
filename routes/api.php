@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WalletTypeController;
@@ -32,7 +33,7 @@ Route::get('/wallets/{id}', [WalletController::class, 'showWallet']);
 Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
 
 
-
+Route::get('/summary', [SummaryController::class, 'summary']);
 
 
 Route::get('/users/{id}', [UserController::class, 'getUserDetails']);

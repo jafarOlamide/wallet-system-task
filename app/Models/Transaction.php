@@ -14,4 +14,10 @@ class Transaction extends Model
         'wallet_id',
         'amount'
     ];
+
+    public function wallet()
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
 }

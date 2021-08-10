@@ -81,36 +81,44 @@ class WalletController extends Controller
             'initiation_wallet'=> ['required'],
             'destination_wallet'=> ['required']
         ]);
-
-        // $initiation_wallet = Wallet::find($fields['initiation_wallet']);
         
         //get minimum balance
         $wallet = new Wallet();
         $minimum_balance = $wallet->minimumBalance($fields['initiation_wallet']);
 
         //check balance
-        $initiation_wallet = Wallet::find($fields['initiation_wallet']);
+        $initiation_wallet = $wallet::find($fields['initiation_wallet']);
 
         //subtract balance from amount
         $transaction_subtraction =  $initiation_wallet->balance - $fields['amount'];
 
         //compare transaction balance with minimum balance
         if ($transaction_subtraction  < $minimum_balance->minimum_balance) {
-            return ['res'=> false, 'message'=> 'Insufficient funds'];
+            return response(['res'=> false, 'message'=> 'Insufficient funds'], 400);
         }
 
         $initiation_wallet->balance = $transaction_subtraction;
         $initiation_wallet->save();
+        
+        //save transaction
+        $wallet->transaction()->create([
+            'user_id' => $initiation_wallet->user_id,
+            'wallet_id' => $initiation_wallet->wallet_id,
+            'amount' => $fields['amount']
+        ]);
 
-        $destination_wallet = Wallet::find($fields['destination_wallet']);
+        $destination_wallet = $wallet::find($fields['destination_wallet']);
         $destination_wallet->balance += $fields['amount'];
         $destination_wallet->save();
+        
+        //save transaction  
+        $wallet->transaction()->create([
+            'user_id' => $destination_wallet->user_id,
+            'wallet_id'=>$fields['destination_wallet'],
+            'amount'=>$fields['amount']
+        ]);
 
         return ['res'=> 'success', 'message'=> 'Your new balance is ' . $initiation_wallet->balance];
-
-
-
-
 
     }
 }

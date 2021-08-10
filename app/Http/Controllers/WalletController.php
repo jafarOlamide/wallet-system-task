@@ -51,4 +51,66 @@ class WalletController extends Controller
 
         return ["wallet"=>$user_wallet, "transaction_history"=>$transactions];
     }
+
+    public function fundWallet(Request $request)
+    {
+        $fields = $request->validate([
+            'amount'=> ['required'],
+            'wallet_id'=> ['required']
+        ]);
+
+        $wallet = Wallet::find($fields['wallet_id']);
+        $wallet->balance += $fields['amount'];
+        $wallet->save();
+        $wallet_id = $wallet->id;
+
+         
+        $transaction = Transaction::create([
+            'user_id' => $wallet->user_id,
+            'wallet_id'=>$wallet->id,
+            'amount'=>$fields['amount']
+        ]);
+        return ['res'=> 'success', 'message'=> 'Your wallet has been funded with ' . $transaction->amount];
+
+    }
+
+    public function transferFund(Request $request)
+    {
+        $fields = $request->validate([
+            'amount'=> ['required'],
+            'initiation_wallet'=> ['required'],
+            'destination_wallet'=> ['required']
+        ]);
+
+        // $initiation_wallet = Wallet::find($fields['initiation_wallet']);
+        
+        //get minimum balance
+        $wallet = new Wallet();
+        $minimum_balance = $wallet->minimumBalance($fields['initiation_wallet']);
+
+        //check balance
+        $initiation_wallet = Wallet::find($fields['initiation_wallet']);
+
+        //subtract balance from amount
+        $transaction_subtraction =  $initiation_wallet->balance - $fields['amount'];
+
+        //compare transaction balance with minimum balance
+        if ($transaction_subtraction  < $minimum_balance->minimum_balance) {
+            return ['res'=> false, 'message'=> 'Insufficient funds'];
+        }
+
+        $initiation_wallet->balance = $transaction_subtraction;
+        $initiation_wallet->save();
+
+        $destination_wallet = Wallet::find($fields['destination_wallet']);
+        $destination_wallet->balance += $fields['amount'];
+        $destination_wallet->save();
+
+        return ['res'=> 'success', 'message'=> 'Your new balance is ' . $initiation_wallet->balance];
+
+
+
+
+
+    }
 }

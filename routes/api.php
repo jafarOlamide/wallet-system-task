@@ -23,6 +23,8 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 
 
 Route::post('/create_wallet', [WalletController::class, 'create']);
+Route::post('/fund_wallet', [WalletController::class, 'fundWallet']);
+Route::post('/transfer', [WalletController::class, 'transferFund']);
 Route::get('/wallets', [WalletController::class, 'getWallets']);
 Route::get('/wallets/{id}', [WalletController::class, 'showWallet']);
 

@@ -15,7 +15,8 @@ class AuthController extends Controller
            'email' => ['required', 'string', 'email', 'unique:users,email'],
            'password'=> ['required', 'string'],
            'name'=> ['required', 'string', 'max:255'],
-           'phone_number'=> ['required', 'string', 'max:255']
+           'phone_number'=> ['required', 'string', 'max:255'],
+           'role'=> ['required']
         ]);
 
 
@@ -23,10 +24,11 @@ class AuthController extends Controller
            'email'=> $fields['email'],
            'password'=> bcrypt($fields['password']),
            'name'=> $fields['name'],
-           'phone'=> $fields['phone_number']
+           'phone'=> $fields['phone_number'],
+           'role'=> $fields['role']
         ]);
 
-       $token = $user->createToken(env('TOKEN_AUTHENTICATION'));
+       $token = $fields['role'] == 1 ? $user->createToken(env('ADMIN_TOKEN_AUTHENTICATION')) : $user->createToken(env('TOKEN_AUTHENTICATION'));
 
        return response(["user"=> $user, "token"=>$token->plainTextToken]);
     }

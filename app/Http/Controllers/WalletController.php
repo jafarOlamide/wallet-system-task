@@ -43,12 +43,20 @@ class WalletController extends Controller
         ->select('users.name as owner', 'users.email as owner_email', 'wallets.balance','wallets.wallet_type_id  as wallet_type_id', 'wallet_types.type_name as wallet_type','wallets.created_at', 'wallets.updated_at as last_transaction_date')
         ->where('wallets.id', $id)
         ->get();
+        
+        if ($user_wallet->count() == 0 || !$user_wallet) {
+            $user_wallet = 0;
+        }
 
         $transactions = Transaction::
         select('amount', 'created_at')
         ->where('wallet_id', $id)
         ->get();
 
+        if ($transactions->count() == 0 || !$transactions) {
+            $transactions = 0;
+        }
+        
         return ["wallet"=>$user_wallet, "transaction_history"=>$transactions];
     }
 
@@ -59,19 +67,23 @@ class WalletController extends Controller
             'wallet_id'=> ['required']
         ]);
 
+        //check existence to get wallet info
         $wallet = Wallet::find($fields['wallet_id']);
+        if (!$wallet) {
+            return response(['res'=>false, 'message'=> 'Account not found'], 400);
+        }
+
         $wallet->balance += $fields['amount'];
         $wallet->save();
-        $wallet_id = $wallet->id;
 
-         
+        //save as a transaction
         $transaction = Transaction::create([
             'user_id' => $wallet->user_id,
             'wallet_id'=>$wallet->id,
             'amount'=>$fields['amount']
         ]);
-        return ['res'=> 'success', 'message'=> 'Your wallet has been funded with ' . $transaction->amount];
 
+        return ['res'=> 'success', 'message'=> 'Your wallet has been funded with ' . $transaction->amount];
     }
 
     public function transferFund(Request $request)
@@ -97,28 +109,30 @@ class WalletController extends Controller
             return response(['res'=> false, 'message'=> 'Insufficient funds'], 400);
         }
 
+        //reduce balance from source account
         $initiation_wallet->balance = $transaction_subtraction;
         $initiation_wallet->save();
         
         //save transaction
-        $wallet->transaction()->create([
+        Transaction::create([
             'user_id' => $initiation_wallet->user_id,
-            'wallet_id' => $initiation_wallet->wallet_id,
+            'wallet_id' => $initiation_wallet->user_id,
             'amount' => $fields['amount']
         ]);
 
+        //increment balance in destination account
         $destination_wallet = $wallet::find($fields['destination_wallet']);
         $destination_wallet->balance += $fields['amount'];
         $destination_wallet->save();
         
         //save transaction  
-        $wallet->transaction()->create([
+        Transaction::create([
             'user_id' => $destination_wallet->user_id,
             'wallet_id'=>$fields['destination_wallet'],
             'amount'=>$fields['amount']
         ]);
 
-        return ['res'=> 'success', 'message'=> 'Your new balance is ' . $initiation_wallet->balance];
+        return ['res'=> 'success', 'message'=> 'A sum of ' . $fields['amount'] . ' was deducted from your account, your new balance is ' . $initiation_wallet->balance];
 
     }
 }

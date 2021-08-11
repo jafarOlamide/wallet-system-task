@@ -22,22 +22,23 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 
 
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    //GENERAL USER ROUTES
+    Route::post('/create_wallet', [WalletController::class, 'create']);
+    Route::post('/fund_wallet', [WalletController::class, 'fundWallet']);
+    Route::post('/transfer', [WalletController::class, 'transferFund']);
+    Route::get('/wallets/{id}', [WalletController::class, 'showWallet']); 
+    
+    Route::get('/users/{id}', [UserController::class, 'getUserDetails']);
 
-Route::post('/create_wallet', [WalletController::class, 'create']);
-Route::post('/fund_wallet', [WalletController::class, 'fundWallet']);
-Route::post('/transfer', [WalletController::class, 'transferFund']);
-Route::get('/wallets', [WalletController::class, 'getWallets']);
-Route::get('/wallets/{id}', [WalletController::class, 'showWallet']);
+    //ADMIN ROUTES
+    Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
+    Route::get('/wallets', [WalletController::class, 'getWallets']);
+    Route::get('/summary', [SummaryController::class, 'summary']);
+    Route::get('/users', [UserController::class, 'getUsers']);
+});
 
 
-Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
-
-
-Route::get('/summary', [SummaryController::class, 'summary']);
-
-
-Route::get('/users/{id}', [UserController::class, 'getUserDetails']);
-Route::get('/users', [UserController::class, 'getUsers']);
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

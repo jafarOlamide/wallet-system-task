@@ -15,9 +15,4 @@ class Transaction extends Model
         'amount'
     ];
 
-    public function wallet()
-    {
-        return $this->belongsTo(Wallet::class);
-    }
-
 }

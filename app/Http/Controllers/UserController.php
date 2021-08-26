@@ -6,11 +6,14 @@ use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Http\Traits\UserRole;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function getUserDetails($id){
+    use UserRole;
+
+    public function find($id){
         $user_details = User::select('name', 'email')->where('id', $id)->get();
 
         if (!$user_details) {
@@ -37,14 +40,18 @@ class UserController extends Controller
             $transaction_history = 0;
         }
 
-        return ["user_details"=>$user_details, "wallets"=>$wallet_details, "transactions"=>$transaction_history];
+        return response(["user_details"=>$user_details, "wallets"=>$wallet_details, "transactions"=>$transaction_history], 200);
 
     }
 
 
-    public function getUsers()
+    public function index(Request $request)
     {
+        if (!$this->isAdmin($request->user())) {
+            return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
+        }
+
         $users = User::select('name', 'email', 'role')->get();
-        return $users;
+        return response($users, 200);
     }
 }

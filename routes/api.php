@@ -24,18 +24,18 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     //GENERAL USER ROUTES
-    Route::post('/create_wallet', [WalletController::class, 'create']);
-    Route::post('/fund_wallet', [WalletController::class, 'fundWallet']);
+    Route::post('/create_wallet', [WalletController::class, 'store']);
+    // Route::post('/fund_wallet', [WalletController::class, 'fundWallet']);
     Route::post('/transfer', [WalletController::class, 'transferFund']);
-    Route::get('/wallets/{id}', [WalletController::class, 'showWallet']); 
+    Route::get('/wallets/{id}', [WalletController::class, 'find']); 
     
-    Route::get('/users/{id}', [UserController::class, 'getUserDetails']);
+    Route::get('/users/{id}', [UserController::class, 'find']);
 
     //ADMIN ROUTES
     Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
-    Route::get('/wallets', [WalletController::class, 'getWallets']);
-    Route::get('/summary', [SummaryController::class, 'summary']);
-    Route::get('/users', [UserController::class, 'getUsers']);
+    Route::get('/wallets', [WalletController::class, 'index']);
+    Route::get('/summary', [SummaryController::class, 'index']);
+    Route::get('/users', [UserController::class, 'index']);
 });
 
 

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class WalletController extends Controller
 {
     
-    public function create(Request $request){
+    public function store(Request $request){
         $fields = $request->validate([
             'balance'=> ['required'],
             'wallet_type_id'=> ['required'],
@@ -22,20 +22,26 @@ class WalletController extends Controller
             'user_id'=> $fields['user_id'],
         ]);
 
-        return ["wallet" => $wallet];
+        return response(["wallet" => $wallet], 200);
 
     }
 
-    public function getWallets()
+    public function index(Request $request)
     {
-        return Wallet::
+        if (!$this->isAdmin($request->user())) {
+            return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
+        }
+
+        $walllets =  Wallet::
         join('wallet_types', 'wallet_types.id', '=', 'wallets.wallet_type_id')
         ->join('users', 'users.id', '=', 'wallets.user_id')
         ->select('wallets.id as wallet_id', 'users.name as user_name', 'users.email as user_email', 'wallets.balance','wallets.wallet_type_id  as wallet_type_id', 'wallet_types.type_name as wallet_type','wallets.created_at', 'wallets.updated_at')
         ->get();
+        
+        return response(['res'=> 'success', $walllets], 200);
     }
 
-    public function showWallet($id)
+    public function find($id)
     {
         $user_wallet = Wallet::
         join('wallet_types', 'wallet_types.id', '=', 'wallets.wallet_type_id')
@@ -57,7 +63,7 @@ class WalletController extends Controller
             $transactions = 0;
         }
         
-        return ["wallet"=>$user_wallet, "transaction_history"=>$transactions];
+        return ['res'=> 'success', "wallet"=>$user_wallet, "transaction_history"=>$transactions];
     }
 
     public function fundWallet(Request $request)
@@ -83,7 +89,7 @@ class WalletController extends Controller
             'amount'=>$fields['amount']
         ]);
 
-        return ['res'=> 'success', 'message'=> 'Your wallet has been funded with ' . $transaction->amount];
+        return response(['res'=> 'success', 'message'=> 'Your wallet has been funded with ' . $transaction->amount], 200);
     }
 
     public function transferFund(Request $request)
@@ -132,7 +138,7 @@ class WalletController extends Controller
             'amount'=>$fields['amount']
         ]);
 
-        return ['res'=> 'success', 'message'=> 'A sum of ' . $fields['amount'] . ' was deducted from your account, your new balance is ' . $initiation_wallet->balance];
+        return response(['res'=> 'success', 'message'=> 'A sum of ' . $fields['amount'] . ' was deducted from your account, your new balance is ' . $initiation_wallet->balance], 200);
 
     }
 }

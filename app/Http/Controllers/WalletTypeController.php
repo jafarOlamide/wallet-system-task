@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\UserRole;
 use App\Models\WalletType;
 use Illuminate\Http\Request;
 
 class WalletTypeController extends Controller
 {
+    use UserRole;
+    
     public function create(Request $request){
+        //verufy authorisation
+        if (!$this->isAdmin($request->user())) {
+            return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
+        }
+
         $fields = $request->validate([
             'type_name'=> ['required', 'string', 'unique:wallet_types,type_name'],
             'minimum_balance'=> ['required'],
@@ -20,6 +28,7 @@ class WalletTypeController extends Controller
             'monthly_interest'=> $fields['monthly_interest'],
         ]);
 
-        return ["wallet" => $wallet];
+        return response(["wallet" => $wallet], 200);
     }
 }
+

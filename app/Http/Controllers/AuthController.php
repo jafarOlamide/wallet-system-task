@@ -28,9 +28,11 @@ class AuthController extends Controller
            'role'=> $fields['role']
         ]);
 
-       $token = $fields['role'] == 1 ? $user->createToken(env('ADMIN_TOKEN_AUTHENTICATION')) : $user->createToken(env('TOKEN_AUTHENTICATION'));
+        $role = $fields['role'] === 1 ? "admin" : "user";
 
-       return response(["user"=> $user, "token"=>$token->plainTextToken]);
+        $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$role]);
+
+       return response(['success'=> true, "user"=> $user, "token"=>$token->plainTextToken]);
     }
    
     public function login(Request $request ){
@@ -45,8 +47,10 @@ class AuthController extends Controller
            return response(['success'=>false, 'message'=> 'Invalid username or password'], 400);
        }
 
-       $token = $user->createToken(env('TOKEN_AUTHENTICATION'))->plainTextToken;
+       $user_role = $user->role === 1 ? "admin" : "user";
 
-       return response(['success'=> true, 'user'=> $user, 'token'=> $token], 200);
+       $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$user_role])->plainTextToken;
+
+       return response(['success'=> true, 'user'=> $user, 'token'=> $token, 'token_expiration'=>'60 mins'], 200);
     }
 }

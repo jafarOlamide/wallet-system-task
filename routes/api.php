@@ -32,12 +32,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/users/{id}', [UserController::class, 'find']);
 
     //ADMIN ROUTES
-    Route::post('/create_wallet_type', [WalletTypeController::class, 'create']);
+    Route::post('/admin/add', [AuthController::class, 'registerAdmin']);
+    Route::post('/create_wallet_type', [WalletTypeController::class, 'store']);
+    Route::get('/wallet_types', [WalletTypeController::class, 'index']);
     Route::get('/wallets', [WalletController::class, 'index']);
     Route::get('/summary', [SummaryController::class, 'index']);
     Route::get('/users', [UserController::class, 'index']);
 });
-
 
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {

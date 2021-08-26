@@ -18,16 +18,12 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function minimumBalance($id)
-    {
-        $minimum_balance = $this::
-        join('wallet_types', 'wallet_types.id', '=', 'wallets.wallet_type_id')
-        ->select('wallet_types.minimum_balance')
-        ->where('wallets.id', $id)
-        ->first();
-
-        return $minimum_balance;
+    public function walletType(){
+        return $this->hasOne(WalletType::class, 'id', 'wallet_type_id');
     }
 
+    public function transactions(){
+        return $this->hasMany(Transaction::class, 'wallet_id')->select('amount', 'created_at');
+    }
     
 }

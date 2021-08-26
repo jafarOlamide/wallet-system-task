@@ -10,7 +10,7 @@ class WalletTypeController extends Controller
 {
     use UserRole;
 
-    public function create(Request $request){
+    public function store(Request $request){
         //verify authorisation
         if (!$this->isAdmin($request->user())) {
             return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
@@ -29,6 +29,19 @@ class WalletTypeController extends Controller
         ]);
 
         return response(['res'=> 'success', "wallet" => $wallet], 200);
+    }
+
+
+    public function index(Request $request){
+
+        if (!$this->isAdmin($request->user())) {
+            return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
+        }
+
+        $wallet_types = WalletType::select('id', 'type_name', 'minimum_balance', 'monthly_interest')->get();
+
+        return response(['res'=> 'success', 'wallet_types' => $wallet_types], 200);
+
     }
 }
 

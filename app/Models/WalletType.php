@@ -16,7 +16,7 @@ class WalletType extends Model
     ];
 
 
-    public function wallet(){
-        return $this->hasMany(Wallet::class);
-    }
+    // public function wallet(){
+    //     return $this->hasMany(Wallet::class);
+    // }
 }

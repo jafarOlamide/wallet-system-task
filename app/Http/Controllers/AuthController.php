@@ -16,9 +16,39 @@ class AuthController extends Controller
            'password'=> ['required', 'string'],
            'name'=> ['required', 'string', 'max:255'],
            'phone_number'=> ['required', 'string', 'max:255'],
-           'role'=> ['required']
+           'balance'=> ['required'],
+           'wallet_type_id'=> ['required']
         ]);
 
+        $user = User::create([
+           'email'=> $fields['email'],
+           'password'=> bcrypt($fields['password']),
+           'name'=> $fields['name'],
+           'phone'=> $fields['phone_number'],
+        ]);
+
+        $role = "user";
+
+        //create a wallet for the user
+        $wallet = $user->wallet()->create([
+            'balance'=> $request['balance'],
+            'wallet_type_id'=> $request['wallet_type_id'],
+            'user_id'=> $user->id
+        ]);
+        
+        $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$role]);
+
+        return response(['res'=> 'success', "user"=> $user, "wallet" => $wallet, "token"=>$token->plainTextToken, 'token_expiration'=>'60 mins']);
+    }
+
+
+    public function registerAdmin(Request $request){
+        $fields = $request->validate([
+           'email' => ['required', 'string', 'email', 'unique:users,email'],
+           'password'=> ['required', 'string'],
+           'name'=> ['required', 'string', 'max:255'],
+           'phone_number'=> ['required', 'string', 'max:255']
+        ]);
 
         $user = User::create([
            'email'=> $fields['email'],
@@ -28,11 +58,11 @@ class AuthController extends Controller
            'role'=> $fields['role']
         ]);
 
-        $role = $fields['role'] === 1 ? "admin" : "user";
-
+        $role = "admin";
+        
         $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$role]);
 
-       return response(['res'=> 'success',, "user"=> $user, "token"=>$token->plainTextToken]);
+        return response(['res'=> 'success', "user"=> $user, "token"=>$token->plainTextToken, 'token_expiration'=>'60 mins']);
     }
    
     public function login(Request $request ){
@@ -44,13 +74,13 @@ class AuthController extends Controller
        $user = User::where('email', $fields['email'])->first();
 
        if (!$user || !Hash::check($fields['password'], $user->password)) {
-           return response(['res'=> 'success',, 'message'=> 'Invalid username or password'], 400);
+           return response(['res'=> 'success', 'message'=> 'Invalid username or password'], 400);
        }
 
-       $user_role = $user->role === 1 ? "admin" : "user";
+       $user_role = $user->role;
 
        $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$user_role])->plainTextToken;
 
-       return response(['res'=> 'success',, 'user'=> $user, 'token'=> $token, 'token_expiration'=>'60 mins'], 200);
+       return response(['res'=> 'success', 'user'=> $user, 'token'=> $token, 'token_expiration'=>'60 mins'], 200);
     }
 }

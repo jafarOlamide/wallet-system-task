@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 class WalletTypeController extends Controller
 {
     use UserRole;
-    
+
     public function create(Request $request){
-        //verufy authorisation
+        //verify authorisation
         if (!$this->isAdmin($request->user())) {
             return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
         }
@@ -28,7 +28,7 @@ class WalletTypeController extends Controller
             'monthly_interest'=> $fields['monthly_interest'],
         ]);
 
-        return response(["wallet" => $wallet], 200);
+        return response(['res'=> 'success', "wallet" => $wallet], 200);
     }
 }
 

@@ -23,7 +23,7 @@ class SummaryController extends Controller
         $total_wallet_balance = Wallet::sum('balance');
         $total_transactions = Transaction::sum('amount');
         
-        return response(['res'=> 'success', 'total_users'=>$users_count, "total_wallets"=>$wallet_count, "total_balances"=>$total_wallet_balance, "transactions_volume"=>$total_transactions], 200);
+        return response(['res'=> 'success',, 'total_users'=>$users_count, "total_wallets"=>$wallet_count, "total_balances"=>$total_wallet_balance, "transactions_volume"=>$total_transactions], 200);
     }
 
 }

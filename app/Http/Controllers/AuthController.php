@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$role]);
 
-       return response(['success'=> true, "user"=> $user, "token"=>$token->plainTextToken]);
+       return response(['res'=> 'success',, "user"=> $user, "token"=>$token->plainTextToken]);
     }
    
     public function login(Request $request ){
@@ -44,13 +44,13 @@ class AuthController extends Controller
        $user = User::where('email', $fields['email'])->first();
 
        if (!$user || !Hash::check($fields['password'], $user->password)) {
-           return response(['success'=>false, 'message'=> 'Invalid username or password'], 400);
+           return response(['res'=> 'success',, 'message'=> 'Invalid username or password'], 400);
        }
 
        $user_role = $user->role === 1 ? "admin" : "user";
 
        $token = $user->createToken(env('TOKEN_AUTHENTICATION'), [$user_role])->plainTextToken;
 
-       return response(['success'=> true, 'user'=> $user, 'token'=> $token, 'token_expiration'=>'60 mins'], 200);
+       return response(['res'=> 'success',, 'user'=> $user, 'token'=> $token, 'token_expiration'=>'60 mins'], 200);
     }
 }

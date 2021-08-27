@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Traits\UserRole;
+use App\Models\Deposit;
 use App\Models\Transaction;
 use App\Models\Wallet;
+use App\Models\Withdrawal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class WalletController extends Controller
 {
@@ -75,12 +78,12 @@ class WalletController extends Controller
         $fields = $request->validate([
             'amount'=> ['required'],
             'initiation_wallet'=> ['required'],
-            'destination_wallet'=> ['required']
+            'destination_wallet'=> ['required'],
         ]);
-        
+
         $initiation_wallet = Wallet::find($fields['initiation_wallet']); 
 
-        //get minimum balance
+        //get minimum balance of initiation wallet
         $minimum_balance = $initiation_wallet->walletType->minimum_balance;
 
         //subtract balance from amount
@@ -91,19 +94,41 @@ class WalletController extends Controller
             return response(['res'=> false, 'message'=> 'Insufficient funds'], 400);
         }
 
-        //reduce balance from source account
+        //reduce balance from source account to update new balance
         $initiation_wallet->balance = $transaction_subtraction;
         $initiation_wallet->save();
-
-        //increment balance in destination account
+        
+        //increment balance in destination account to update new balance
         $destination_wallet = Wallet::find($fields['destination_wallet']);
         $destination_wallet->balance += $fields['amount'];
         $destination_wallet->save();
         
-        //save transaction  
-        Transaction::create([
+        //other fields
+        $transaction_reference = Str::uuid();
+
+        $transaction_desc = !empty($request->transaction_description) ? $request->transaction_description: "Transfer from customer " . $initiation_wallet->user_id . " to " . $destination_wallet->user_id . " on " . date("Y-m-d H:i:s");
+        
+        //Save as withdrawal
+        Withdrawal::create([
+            'user_id' => $initiation_wallet->user_id,
+            'wallet_id'=>$fields['initiation_wallet'],
+            'amount'=>$fields['amount'],
+            'transaction_reference'=> $transaction_reference,
+            'description'=>$transaction_desc
+        ]);
+        
+        //save as deposit  
+        Deposit::create([
             'user_id' => $destination_wallet->user_id,
             'wallet_id'=>$fields['destination_wallet'],
+            'amount'=>$fields['amount'],
+            'transaction_reference'=> $transaction_reference,
+            'description'=>$transaction_desc
+        ]);
+
+        //save as transaction
+        Transaction::create([
+            'transaction_reference'=>$transaction_reference,
             'amount'=>$fields['amount']
         ]);
 
@@ -111,6 +136,7 @@ class WalletController extends Controller
 
     }
     
+    //EXTERNAL FUNDING FROM DEPOSIT OT BANK TRANSFER
     // public function fundWallet(Request $request)
     // {
     //     $fields = $request->validate([

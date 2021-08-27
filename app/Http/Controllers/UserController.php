@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Http\Traits\UserRole;
+use App\Models\Deposit;
+use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -22,7 +24,7 @@ class UserController extends Controller
         
         $wallet_details = Wallet::
         join('wallet_types', 'wallet_types.id', '=', 'wallets.wallet_type_id')
-        ->select('wallets.id', 'wallets.balance','wallets.created_at', 'wallets.updated_at', 'wallet_types.type_name')
+        ->select('wallets.id as wallet_id', 'wallets.balance','wallets.created_at', 'wallets.updated_at as last_transaction_date', 'wallet_types.type_name')
         ->where('wallets.user_id', $id)
         ->get();
 
@@ -30,17 +32,27 @@ class UserController extends Controller
             $wallet_details = 0;
         }
 
-        $transaction_history = Transaction::
-        join('wallets', 'wallets.id', '=', 'transactions.wallet_id')
-        ->select('transactions.id', 'transactions.wallet_id', 'transactions.amount','wallets.created_at', 'wallets.updated_at')
-        ->where('transactions.user_id', $id)
+        $credit_transaction_history  = Deposit::
+        join('wallets', 'wallets.id', '=', 'deposits.wallet_id')
+        ->select('deposits.wallet_id', 'deposits.transaction_reference','deposits.amount','wallets.created_at as deposit_date')
+        ->where('deposits.user_id', $id)
         ->get();
 
-        if ($transaction_history->count() == 0 || !$transaction_history) {
-            $transaction_history = 0;
+        $debit_transaction_history = Withdrawal::
+        join('wallets', 'wallets.id', '=', 'withdrawals.wallet_id')
+        ->select('withdrawals.wallet_id', 'withdrawals.transaction_reference','withdrawals.amount','wallets.created_at as withdrawal_date')
+        ->where('withdrawals.user_id', $id)
+        ->get();
+
+        if ($debit_transaction_history->count() == 0 || !$debit_transaction_history) {
+            $debit_transaction_history = 0;
         }
 
-        return response(["user_details"=>$user_details, "wallets"=>$wallet_details, "transactions"=>$transaction_history], 200);
+        if ($credit_transaction_history->count() == 0 || !$credit_transaction_history) {
+            $credit_transaction_history = 0;
+        }
+
+        return response(["res"=> "success", "user_details"=>$user_details, "wallets"=>$wallet_details, "debit_transactions"=>$debit_transaction_history, "credit_transactions"=>$credit_transaction_history], 200);
 
     }
 
@@ -52,6 +64,6 @@ class UserController extends Controller
         }
 
         $users = User::select('name', 'email', 'role')->get();
-        return response($users, 200);
+        return response(["res"=> "success",  "users"=>$users], 200);
     }
 }

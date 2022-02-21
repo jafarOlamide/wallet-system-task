@@ -5,6 +5,7 @@
 /vendor
 .env
 .env.backup
+.env.testing
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
@@ -13,3 +14,8 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+app/Services/Geolocation
+app/Services/Map
+app/Services/Satelite
+app/Providers/GeolocationServiceProvider.php
+app/Http/Middleware/MyTestMiddleware.php

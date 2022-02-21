@@ -17,7 +17,7 @@ class CreateWalletsTable extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignId('wallet_type_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->float('balance');
+            $table->decimal('balance', 20, 2);
             $table->timestamps();
         });
     }

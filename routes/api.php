@@ -5,6 +5,8 @@ use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WalletTypeController;
+use App\Models\WalletType;
+use App\Options\DefaultWalletTypes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/users', [UserController::class, 'index']);
 });
 
+Route::get('/test', function (){
+    $wallet_type = WalletType::where('type_name', DefaultWalletTypes::SILVER)->first();
+    return gettype($wallet_type);
+
+});
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

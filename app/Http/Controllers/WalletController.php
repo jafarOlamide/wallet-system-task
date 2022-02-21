@@ -9,6 +9,7 @@ use App\Models\Wallet;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Services\WalletService;
 
 class WalletController extends Controller
 {
@@ -71,6 +72,7 @@ class WalletController extends Controller
 
     public function transferFund(Request $request)
     {
+        // dd($request->user());
         if (!$this->isUser($request->user())) {
             return response(['res'=> false, 'message'=> 'Unauthorised access'], 401);
         }
@@ -82,26 +84,32 @@ class WalletController extends Controller
         ]);
 
         $initiation_wallet = Wallet::find($fields['initiation_wallet']); 
+        WalletService::debitAccount($initiation_wallet, $fields['amount']);
 
-        //get minimum balance of initiation wallet
-        $minimum_balance = $initiation_wallet->walletType->minimum_balance;
 
-        //subtract balance from amount
-        $transaction_subtraction =  $initiation_wallet->balance - $fields['amount'];
+        $destination_wallet = Wallet::find($fields['destination_wallet']);
+        WalletService::creditAccount(Wallet::find($fields['destination_wallet']),  $fields['amount']); 
 
-        //compare transaction balance with minimum balance
-        if ($transaction_subtraction  < $minimum_balance) {
-            return response(['res'=> false, 'message'=> 'Insufficient funds'], 400);
-        }
+
+        // //get minimum balance of initiation wallet
+        // $minimum_balance = $initiation_wallet->walletType->minimum_balance;
+
+        // //subtract balance from amount
+        // $transaction_subtraction =  $initiation_wallet->balance - $fields['amount'];
+
+        // //compare transaction balance with minimum balance
+        // if ($transaction_subtraction  < $minimum_balance) {
+        //     return response(['res'=> false, 'message'=> 'Insufficient funds'], 400);
+        // }
 
         //reduce balance from source account to update new balance
-        $initiation_wallet->balance = $transaction_subtraction;
-        $initiation_wallet->save();
+        // $initiation_wallet->balance = $transaction_subtraction;
+        // $initiation_wallet->save();
         
         //increment balance in destination account to update new balance
-        $destination_wallet = Wallet::find($fields['destination_wallet']);
-        $destination_wallet->balance += $fields['amount'];
-        $destination_wallet->save();
+        // $destination_wallet = Wallet::find($fields['destination_wallet']);
+        // $destination_wallet->balance += $fields['amount'];
+        // $destination_wallet->save();
         
         //other fields
         $transaction_reference = Str::uuid();

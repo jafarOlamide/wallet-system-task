@@ -18,12 +18,13 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function walletType(){
-        return $this->hasOne(WalletType::class, 'id', 'wallet_type_id');
-    }
 
     public function transactions(){
         return $this->hasMany(Transaction::class, 'wallet_id')->select('amount', 'created_at');
     }
     
+    // public function ()
+    // {
+    //     # code...
+    // }
 }
